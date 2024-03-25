@@ -91,14 +91,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 // Function to update prices based on currency
-function updatePrices(currency, exchangeRate) {
+function updatePrices(currency, exchangeRates) {
     const founder15Price = document.querySelector('.price-min');
     const growthPrice = document.querySelectorAll('.price-min')[1];
     const acceleratePrice = document.querySelectorAll('.price-min')[2];
 
-    founder15Price.innerHTML = `${currency}${(15 * exchangeRate).toFixed(2)} <span class="price-details-min">for 15 minutes</span>`;
-    growthPrice.innerHTML = `${currency}${(175 * exchangeRate).toFixed(2)} <span class="price-details-min">/ month</span>`;
-    acceleratePrice.innerHTML = `${currency}${(295 * exchangeRate).toFixed(2)} <span class="price-details-min">/ month</span>`;
+    founder15Price.innerHTML = `<span class="currency-symbol">${currency}</span>${(15 * exchangeRates.GBP).toFixed(2)} <span class="price-details-min">for 15 minutes</span>`;
+    growthPrice.innerHTML = `<span class="currency-symbol">${currency}</span>${(175 * exchangeRates.GBP).toFixed(2)} <span class="price-details-min">/ month</span>`;
+    acceleratePrice.innerHTML = `<span class="currency-symbol">${currency}</span>${(295 * exchangeRates.GBP).toFixed(2)} <span class="price-details-min">/ month</span>`;
 }
 
 // Function to get user's location and fetch exchange rates
@@ -114,12 +114,12 @@ function getLocation() {
 
 // Function to fetch exchange rates from the provided API
 function getExchangeRates() {
-    return fetch('https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_4fQvTnMtgAGxeLCvSiljao9XAm8kjizf4kl37IE1&currencies=EUR,USD,CAD,AUD&base_currency=GBP')
+    return fetch('https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_4fQvTnMtgAGxeLCvSiljao9XAm8kjizf4kl37IE1&currencies=EUR,USD,CAD,AUD,GBP&base_currency=GBP')
         .then(response => response.json())
         .then(data => data.data)
         .catch(error => {
             console.error('Error getting exchange rates:', error);
-            return { USD: 1 }; // Default to USD with exchange rate 1 if retrieval fails
+            return { USD: 1, GBP: 1 }; // Default to USD and GBP with exchange rate 1 if retrieval fails
         });
 }
 
@@ -127,9 +127,8 @@ function getExchangeRates() {
 async function updatePricesBasedOnLocation() {
     const userCurrency = await getLocation();
     const exchangeRates = await getExchangeRates();
-    const exchangeRate = exchangeRates[userCurrency] || exchangeRates.USD;
     const currencySymbol = getCurrencySymbol(userCurrency);
-    updatePrices(currencySymbol, exchangeRate);
+    updatePrices(currencySymbol, exchangeRates);
 }
 
 // Function to get currency symbol based on currency code
@@ -144,6 +143,35 @@ function getCurrencySymbol(currency) {
     return currencySymbols[currency] || '$';
 }
 
-// Call the main function when the page loads
+// Update prices when the page loads
 document.addEventListener('DOMContentLoaded', updatePricesBasedOnLocation);
-}
+
+// Update prices when switching between tabs
+document.addEventListener('DOMContentLoaded', function() {
+    const planOptionsMin = document.querySelectorAll('.plan-option-min');
+    const planContentsMin = document.querySelectorAll('.plan-content-min');
+
+    planOptionsMin.forEach(function(option) {
+        option.addEventListener('click', function() {
+            const selectedPlan = this.getAttribute('data-plan');
+
+            // Update 'selected' class for options
+            planOptionsMin.forEach(function(option) {
+                option.classList.remove('selected');
+            });
+            this.classList.add('selected');
+
+            // Toggle 'active' class for contents
+            planContentsMin.forEach(function(content) {
+                if (content.getAttribute('data-plan') === selectedPlan) {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+
+            // Update prices when switching tabs
+            updatePricesBasedOnLocation();
+        });
+    });
+});
