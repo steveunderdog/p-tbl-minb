@@ -90,3 +90,60 @@ document.addEventListener('DOMContentLoaded', function() {
         accelerateBackToFeaturesMin.style.display = 'none';
     });
 });
+// Function to update prices based on currency
+function updatePrices(currency, exchangeRate) {
+    const founder15Price = document.querySelector('.price-min');
+    const growthPrice = document.querySelectorAll('.price-min')[1];
+    const acceleratePrice = document.querySelectorAll('.price-min')[2];
+
+    founder15Price.innerHTML = `${currency}${(15 * exchangeRate).toFixed(2)} <span class="price-details-min">for 15 minutes</span>`;
+    growthPrice.innerHTML = `${currency}${(175 * exchangeRate).toFixed(2)} <span class="price-details-min">/ month</span>`;
+    acceleratePrice.innerHTML = `${currency}${(295 * exchangeRate).toFixed(2)} <span class="price-details-min">/ month</span>`;
+}
+
+// Function to get user's location and fetch exchange rates
+function getLocation() {
+    return fetch('https://ipapi.co/json/')
+        .then(response => response.json())
+        .then(data => data.currency)
+        .catch(error => {
+            console.error('Error getting location:', error);
+            return 'USD'; // Default to USD if location retrieval fails
+        });
+}
+
+// Function to fetch exchange rates from the provided API
+function getExchangeRates() {
+    return fetch('https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_4fQvTnMtgAGxeLCvSiljao9XAm8kjizf4kl37IE1&currencies=EUR,USD,CAD,AUD&base_currency=GBP')
+        .then(response => response.json())
+        .then(data => data.data)
+        .catch(error => {
+            console.error('Error getting exchange rates:', error);
+            return { USD: 1 }; // Default to USD with exchange rate 1 if retrieval fails
+        });
+}
+
+// Main function to update prices based on user's location
+async function updatePricesBasedOnLocation() {
+    const userCurrency = await getLocation();
+    const exchangeRates = await getExchangeRates();
+    const exchangeRate = exchangeRates[userCurrency] || exchangeRates.USD;
+    const currencySymbol = getCurrencySymbol(userCurrency);
+    updatePrices(currencySymbol, exchangeRate);
+}
+
+// Function to get currency symbol based on currency code
+function getCurrencySymbol(currency) {
+    const currencySymbols = {
+        USD: '$',
+        EUR: '€',
+        GBP: '£',
+        CAD: 'CA$',
+        AUD: 'A$',
+    };
+    return currencySymbols[currency] || '$';
+}
+
+// Call the main function when the page loads
+document.addEventListener('DOMContentLoaded', updatePricesBasedOnLocation);
+}
