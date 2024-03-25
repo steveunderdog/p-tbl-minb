@@ -96,9 +96,9 @@ function updatePrices(currency, exchangeRates) {
     const growthPrice = document.querySelectorAll('.price-min')[1];
     const acceleratePrice = document.querySelectorAll('.price-min')[2];
 
-    founder15Price.innerHTML = `<span class="currency-symbol">${currency}</span>${(15 * exchangeRates.GBP).toFixed(2)} <span class="price-details-min">for 15 minutes</span>`;
-    growthPrice.innerHTML = `<span class="currency-symbol">${currency}</span>${(175 * exchangeRates.GBP).toFixed(2)} <span class="price-details-min">/ month</span>`;
-    acceleratePrice.innerHTML = `<span class="currency-symbol">${currency}</span>${(295 * exchangeRates.GBP).toFixed(2)} <span class="price-details-min">/ month</span>`;
+    founder15Price.innerHTML = `<span class="currency-symbol">${currency}</span>${(15 * exchangeRates[currency]).toFixed(2)} <span class="price-details-min">for 15 minutes</span>`;
+    growthPrice.innerHTML = `<span class="currency-symbol">${currency}</span>${(175 * exchangeRates[currency]).toFixed(2)} <span class="price-details-min">/ month</span>`;
+    acceleratePrice.innerHTML = `<span class="currency-symbol">${currency}</span>${(295 * exchangeRates[currency]).toFixed(2)} <span class="price-details-min">/ month</span>`;
 }
 
 // Function to get user's location and fetch exchange rates
@@ -114,7 +114,7 @@ function getLocation() {
 
 // Function to fetch exchange rates from the provided API
 function getExchangeRates() {
-    return fetch('https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_4fQvTnMtgAGxeLCvSiljao9XAm8kjizf4kl37IE1&currencies=EUR,USD,CAD,AUD,GBP&base_currency=GBP')
+    return fetch('https://api.freecurrencyapi.com/v1/latest?apikey=fca\\_live\\_4fQvTnMtgAGxeLCvSiljao9XAm8kjizf4kl37IE1&currencies=EUR,USD,CAD,AUD,GBP&base_currency=GBP')
         .then(response => response.json())
         .then(data => data.data)
         .catch(error => {
@@ -128,7 +128,7 @@ async function updatePricesBasedOnLocation() {
     const userCurrency = await getLocation();
     const exchangeRates = await getExchangeRates();
     const currencySymbol = getCurrencySymbol(userCurrency);
-    updatePrices(currencySymbol, exchangeRates);
+    updatePrices(userCurrency, exchangeRates);
 }
 
 // Function to get currency symbol based on currency code
